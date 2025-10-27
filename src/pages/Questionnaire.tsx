@@ -10,10 +10,11 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Volume2, Save, RotateCcw, CheckCircle, ChevronLeft, ChevronRight, Mic, Square, Play } from "lucide-react";
 import { examData, Question } from "@/data/examQuestions";
+import { openai, isOpenAIConfigured } from "@/lib/openai";
 
 interface Answers {
   [sectionId: string]: {
-    [questionId: string]: string | { type: 'audio'; url: string; duration: number };
+    [questionId: string]: string | { type: 'audio'; url: string; duration: number; transcription?: string };
   };
 }
 
@@ -33,7 +34,13 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 const Questionnaire = () => {
+  // Track if recognition is running
+  const [recognitionActive, setRecognitionActive] = useState(false);
+  const [currentTranscription, setCurrentTranscription] = useState<string>("");
+  const recognitionRef = useRef<any>(null);
   const [answers, setAnswers] = useState<Answers>({});
+  const [audioTranscriptions, setAudioTranscriptions] = useState<{ [key: string]: string }>({});
+  const [extractedKeywords, setExtractedKeywords] = useState<string[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -96,6 +103,41 @@ const Questionnaire = () => {
   };
 
   const startRecording = async () => {
+    // Start browser speech recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setCurrentTranscription(transcript);
+      };
+      recognition.onerror = (event: any) => {
+        setCurrentTranscription("");
+      };
+      recognitionRef.current = recognition;
+      recognition.start();
+      setRecognitionActive(true);
+    }
+    // Start browser speech recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setCurrentTranscription(transcript);
+      };
+      recognition.onerror = (event: any) => {
+        setCurrentTranscription("");
+      };
+      recognitionRef.current = recognition;
+      recognition.start();
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
@@ -150,6 +192,11 @@ const Questionnaire = () => {
   };
 
   const stopRecording = () => {
+    // Stop speech recognition
+    if (recognitionRef.current && recognitionActive) {
+      recognitionRef.current.stop();
+      setRecognitionActive(false);
+    }
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
@@ -166,26 +213,22 @@ const Questionnaire = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64Audio = reader.result as string;
-        const audioDuration = 0; // You could calculate this if needed
-        
-        console.log("Saving audio answer:", { sectionId, questionId, audioLength: base64Audio?.length });
-        
+        const audioDuration = 0;
         setAnswers((prev) => ({
           ...prev,
           [sectionId]: {
             ...prev[sectionId],
-            [questionId]: { type: 'audio', url: base64Audio, duration: audioDuration },
+            [questionId]: { type: 'audio', url: base64Audio, duration: audioDuration, transcription: currentTranscription },
           },
         }));
-        
         setAudioBlob(null);
+        setCurrentTranscription("");
         toast({
           title: "Answer saved",
           description: "Your audio answer has been saved.",
         });
       };
       reader.onerror = () => {
-        console.error("Error reading audio blob");
         toast({
           title: "Error",
           description: "Failed to save audio recording.",
@@ -303,11 +346,51 @@ const Questionnaire = () => {
 
   const handleFinish = () => {
     handleSave();
-    setIsFinished(true);
-    toast({
-      title: "Questionnaire completed!",
-      description: "Thank you for completing the assessment.",
+    const userKeywords: string[] = [];
+    const audioPromises: Promise<void>[] = [];
+    const newTranscriptions: { [key: string]: string } = {};
+    Object.entries(answers).forEach(([sectionId, sectionAnswers]) => {
+      Object.entries(sectionAnswers).forEach(([questionId, answer]) => {
+        if (typeof answer === 'string') {
+          userKeywords.push(...answer.toLowerCase().split(/\W+/).filter(Boolean));
+        } else if (answer && answer.type === 'audio' && answer.url && isOpenAIConfigured() && openai) {
+          // Transcribe audio using OpenAI Whisper
+          const audioBase64 = answer.url.split(',')[1];
+          const audioBuffer = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
+          const file = new File([audioBuffer], `${sectionId}_${questionId}.webm`, { type: 'audio/webm' });
+          audioPromises.push(
+            openai.audio.transcriptions.create({
+              file,
+              model: 'whisper-1',
+              response_format: 'text',
+            }).then((result: any) => {
+              newTranscriptions[`${sectionId}_${questionId}`] = result;
+              userKeywords.push(...result.toLowerCase().split(/\W+/).filter(Boolean));
+            }).catch(() => {
+              newTranscriptions[`${sectionId}_${questionId}`] = '';
+            })
+          );
+        }
+      });
     });
+    if (audioPromises.length > 0) {
+      Promise.all(audioPromises).then(() => {
+        setAudioTranscriptions(newTranscriptions);
+        setExtractedKeywords(userKeywords);
+        setIsFinished(true);
+        toast({
+          title: "Questionnaire completed!",
+          description: "Thank you for completing the assessment.",
+        });
+      });
+    } else {
+      setExtractedKeywords(userKeywords);
+      setIsFinished(true);
+      toast({
+        title: "Questionnaire completed!",
+        description: "Thank you for completing the assessment.",
+      });
+    }
   };
 
   const handleRestart = () => {
@@ -492,6 +575,30 @@ const Questionnaire = () => {
       return !answer.url;
     });
 
+    // Grading logic: compare user keywords to correct answers
+        const gradingResults: { question: string; correct: boolean; userAnswer: string; correctAnswer: string; matchedKeywords: string[]; transcription: string }[] = [];
+        answeredQuestions.forEach(({ question, sectionId }) => {
+          let userAnswer = '';
+          let transcription = '';
+          const answerObj = answers[sectionId]?.[question.id];
+          if (typeof answerObj === 'string') {
+            userAnswer = answerObj;
+          } else if (answerObj && typeof answerObj !== 'string') {
+            transcription = answerObj.transcription || '';
+            userAnswer = transcription;
+          }
+          const correctKeywords = [question.answer.toLowerCase(), ...(question.options?.map(opt => opt.toLowerCase()) || [])];
+          const userAnswerKeywords = userAnswer.toLowerCase().split(/\W+/).filter(Boolean);
+          const matchedKeywords = userAnswerKeywords.filter(kw => correctKeywords.some(ck => ck.includes(kw) || kw.includes(ck)));
+          gradingResults.push({
+            question: question.question,
+            correct: matchedKeywords.length > 0,
+            userAnswer,
+            correctAnswer: question.answer,
+            matchedKeywords,
+            transcription,
+          });
+    });
     return (
       <div className="space-y-8">
         <Card className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
@@ -513,26 +620,24 @@ const Questionnaire = () => {
             </div>
           </CardContent>
         </Card>
-
         <div>
-          <h2 className="text-2xl font-bold mb-6">Your Answers Review</h2>
-          
-          {answeredQuestions.length > 0 && (
+          <h2 className="text-2xl font-bold mb-6">Your Answers Review & Grading</h2>
+          {gradingResults.length > 0 && (
             <div className="space-y-4 mb-8">
-              <h3 className="text-xl font-semibold text-green-600">Answered Questions ({answeredQuestions.length})</h3>
-              {answeredQuestions.map(({ question, sectionId }, index) => (
-                <Card key={`answered-${sectionId}-${question.id}`} className="border-green-200 dark:border-green-800">
+              <h3 className="text-xl font-semibold text-green-600">Graded Answers ({gradingResults.length})</h3>
+              {gradingResults.map((result, idx) => (
+                <Card key={`graded-${idx}`} className={result.correct ? "border-green-200 dark:border-green-800" : "border-red-200 dark:border-red-800"}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <Badge className="bg-green-500 text-white">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Answered
+                          <Badge className={result.correct ? "bg-green-500 text-white" : "bg-red-500 text-white"}>
+                            {result.correct ? <CheckCircle className="h-3 w-3 mr-1" /> : <span className="h-3 w-3 mr-1">✗</span>}
+                            {result.correct ? "Correct" : "Incorrect"}
                           </Badge>
                         </div>
                         <CardTitle className="text-lg">
-                          {question.question}
+                          {result.question}
                         </CardTitle>
                       </div>
                     </div>
@@ -540,28 +645,25 @@ const Questionnaire = () => {
                   <CardContent>
                     <div className="bg-muted p-4 rounded-lg">
                       <Label className="text-sm font-semibold mb-2 block">Your Answer:</Label>
-                      {typeof answers[sectionId]?.[question.id] === 'string' ? (
-                        <p className="text-sm whitespace-pre-wrap">{answers[sectionId]?.[question.id] as string}</p>
-                      ) : answers[sectionId]?.[question.id] && typeof answers[sectionId]?.[question.id] !== 'string' ? (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => playAudioAnswer((answers[sectionId]?.[question.id] as { type: 'audio'; url: string; duration: number }).url)}
-                          >
-                            <Play className="h-4 w-4 mr-2" />
-                            Play Audio Answer
-                          </Button>
-                          <span className="text-sm text-muted-foreground">Audio recording</span>
-                        </div>
-                      ) : null}
+                      <p className="text-sm whitespace-pre-wrap">{result.userAnswer}</p>
+                      {result.transcription && (
+                        <>
+                          <Label className="text-sm font-semibold mb-2 block">Transcription:</Label>
+                          <p className="text-sm whitespace-pre-wrap text-blue-700">{result.transcription}</p>
+                        </>
+                      )}
+                      <Label className="text-sm font-semibold mb-2 block">Correct Answer:</Label>
+                      <p className="text-sm whitespace-pre-wrap">{result.correctAnswer}</p>
+                      {result.matchedKeywords.length > 0 && (
+                        <div className="mt-2 text-green-700 text-sm">Matched keywords: {result.matchedKeywords.join(", ")}</div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
           )}
-
+          {/* Show unanswered questions as before */}
           {unansweredQuestions.length > 0 && (
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-muted-foreground">Unanswered Questions ({unansweredQuestions.length})</h3>
