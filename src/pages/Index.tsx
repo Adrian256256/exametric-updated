@@ -3,7 +3,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, MessageSquare, Lightbulb, ArrowRight, TrendingUp, Sparkles } from "lucide-react";
+import { BarChart3, MessageSquare, Lightbulb, ArrowRight, TrendingUp, Sparkles, ClipboardList } from "lucide-react";
 
 const Index = () => {
   return (
@@ -56,7 +56,7 @@ const Index = () => {
 
         <section className="py-16 bg-muted/30">
           <div className="container">
-            <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto">
               <Card className="shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 border-t-4 border-t-primary">
                 <CardHeader className="space-y-3">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -100,7 +100,27 @@ const Index = () => {
               <Card className="shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 border-t-4 border-t-primary">
                 <CardHeader className="space-y-3">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Lightbulb className="h-6 w-6 text-primary" />
+                    <ClipboardList className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl">Take the Test</CardTitle>
+                  <CardDescription className="text-base leading-relaxed">
+                    Answer 44 computer knowledge questions in written and audio formats
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button asChild variant="link" className="p-0 h-auto gap-1 text-primary font-semibold">
+                    <Link to="/questionnaire">
+                      Start questionnaire
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 border-t-4 border-t-accent">
+                <CardHeader className="space-y-3">
+                  <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
+                    <Lightbulb className="h-6 w-6 text-accent" />
                   </div>
                   <CardTitle className="text-xl">Research Insights</CardTitle>
                   <CardDescription className="text-base leading-relaxed">
@@ -108,7 +128,7 @@ const Index = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button asChild variant="link" className="p-0 h-auto gap-1 text-primary font-semibold">
+                  <Button asChild variant="link" className="p-0 h-auto gap-1 text-accent font-semibold">
                     <Link to="/insights">
                       View insights
                       <ArrowRight className="h-4 w-4" />

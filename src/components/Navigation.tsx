@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { BarChart3, MessageSquare, Lightbulb, Info, Home, LogOut, User } from "lucide-react";
+import { BarChart3, MessageSquare, Lightbulb, Info, Home, LogOut, User, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +13,7 @@ const Navigation = () => {
     { to: "/", label: "Home", icon: Home },
     { to: "/analyze", label: "Analyze Data", icon: BarChart3 },
     { to: "/opinions", label: "Opinions", icon: MessageSquare },
+    { to: "/questionnaire", label: "Questionnaire", icon: ClipboardList },
     { to: "/insights", label: "Insights", icon: Lightbulb },
     { to: "/about", label: "About", icon: Info },
   ];

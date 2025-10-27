@@ -12,6 +12,7 @@ import Insights from "./pages/Insights";
 import About from "./pages/About";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Questionnaire from "./pages/Questionnaire";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/analyze" element={<Analyze />} />
               <Route path="/opinions" element={<Opinions />} />
               <Route path="/insights" element={<Insights />} />
+              <Route path="/questionnaire" element={<Questionnaire />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
