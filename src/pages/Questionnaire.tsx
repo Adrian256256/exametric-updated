@@ -10,7 +10,6 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Volume2, Save, RotateCcw, CheckCircle, ChevronLeft, ChevronRight, Mic, Square, Play } from "lucide-react";
 import { examData, Question } from "@/data/examQuestions";
-import { openai, isOpenAIConfigured } from "@/lib/openai";
 
 interface Answers {
   [sectionId: string]: {
@@ -353,44 +352,16 @@ const Questionnaire = () => {
       Object.entries(sectionAnswers).forEach(([questionId, answer]) => {
         if (typeof answer === 'string') {
           userKeywords.push(...answer.toLowerCase().split(/\W+/).filter(Boolean));
-        } else if (answer && answer.type === 'audio' && answer.url && isOpenAIConfigured() && openai) {
-          // Transcribe audio using OpenAI Whisper
-          const audioBase64 = answer.url.split(',')[1];
-          const audioBuffer = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
-          const file = new File([audioBuffer], `${sectionId}_${questionId}.webm`, { type: 'audio/webm' });
-          audioPromises.push(
-            openai.audio.transcriptions.create({
-              file,
-              model: 'whisper-1',
-              response_format: 'text',
-            }).then((result: any) => {
-              newTranscriptions[`${sectionId}_${questionId}`] = result;
-              userKeywords.push(...result.toLowerCase().split(/\W+/).filter(Boolean));
-            }).catch(() => {
-              newTranscriptions[`${sectionId}_${questionId}`] = '';
-            })
-          );
         }
+        // ...existing code...
       });
     });
-    if (audioPromises.length > 0) {
-      Promise.all(audioPromises).then(() => {
-        setAudioTranscriptions(newTranscriptions);
-        setExtractedKeywords(userKeywords);
-        setIsFinished(true);
-        toast({
-          title: "Questionnaire completed!",
-          description: "Thank you for completing the assessment.",
-        });
-      });
-    } else {
-      setExtractedKeywords(userKeywords);
-      setIsFinished(true);
-      toast({
-        title: "Questionnaire completed!",
-        description: "Thank you for completing the assessment.",
-      });
-    }
+    setExtractedKeywords(userKeywords);
+    setIsFinished(true);
+    toast({
+      title: "Questionnaire completed!",
+      description: "Thank you for completing the assessment.",
+    });
   };
 
   const handleRestart = () => {
