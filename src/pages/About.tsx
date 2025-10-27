@@ -35,9 +35,7 @@ const About = () => {
                 <strong className="text-primary font-semibold"> oral assessments</strong> versus <strong className="text-accent font-semibold"> written assessments</strong>.
               </p>
               <p className="leading-relaxed text-lg">
-                By collecting real performance data and student opinions, we can better understand the strengths 
-                and preferences associated with each assessment type, ultimately informing more effective 
-                evaluation strategies in education.
+                By collecting real performance data, we can better understand the strengths associated with each assessment type, ultimately informing more effective evaluation strategies in education.
               </p>
             </CardContent>
           </Card>
@@ -119,7 +117,7 @@ const About = () => {
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="h-2 w-2 rounded-full bg-primary mt-2.5 flex-shrink-0" />
-                  <span className="text-base leading-relaxed"><strong className="font-semibold">Opinion Collection:</strong> Gather student preferences and reasoning</span>
+                  {/* Removed: Opinion Collection section */}
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="h-2 w-2 rounded-full bg-primary mt-2.5 flex-shrink-0" />

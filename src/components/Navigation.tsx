@@ -12,7 +12,6 @@ const Navigation = () => {
   const links = [
     { to: "/", label: "Home", icon: Home },
     { to: "/analyze", label: "Analyze Data", icon: BarChart3 },
-    { to: "/opinions", label: "Opinions", icon: MessageSquare },
     { to: "/questionnaire", label: "Questionnaire", icon: ClipboardList },
     { to: "/insights", label: "Insights", icon: Lightbulb },
     { to: "/about", label: "About", icon: Info },
