@@ -51,7 +51,7 @@ const Index = () => {
 
         <section className="py-16 bg-muted/30">
           <div className="container">
-            <div className="flex flex-row gap-8 max-w-4xl mx-auto justify-center items-stretch">
+            <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto justify-center items-stretch">
               <Card className="shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 border-t-4 border-t-primary min-h-[320px]">
                 <CardHeader className="space-y-3">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
