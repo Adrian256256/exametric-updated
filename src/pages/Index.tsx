@@ -37,18 +37,13 @@ const Index = () => {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
                 <Button asChild size="lg" className="gap-2 shadow-elevated text-base hover:scale-105 transition-transform">
-                  <Link to="/analyze">
-                    <BarChart3 className="h-5 w-5" />
-                    Analyze Data
+                  <Link to="/questionnaire">
+                    <ClipboardList className="h-5 w-5" />
+                    Take the Test
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="gap-2 text-base hover:scale-105 transition-transform">
-                  <Link to="/opinions">
-                    <MessageSquare className="h-5 w-5" />
-                    Share Opinion
-                  </Link>
-                </Button>
+                {/* Removed: Share Opinion button */}
               </div>
             </div>
           </div>
@@ -56,8 +51,8 @@ const Index = () => {
 
         <section className="py-16 bg-muted/30">
           <div className="container">
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto">
-              <Card className="shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 border-t-4 border-t-primary">
+            <div className="flex flex-row gap-8 max-w-4xl mx-auto justify-center items-stretch">
+              <Card className="shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 border-t-4 border-t-primary min-h-[320px]">
                 <CardHeader className="space-y-3">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                     <BarChart3 className="h-6 w-6 text-primary" />
@@ -77,34 +72,16 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 border-t-4 border-t-accent">
-                <CardHeader className="space-y-3">
-                  <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <MessageSquare className="h-6 w-6 text-accent" />
-                  </div>
-                  <CardTitle className="text-xl">Student Opinions</CardTitle>
-                  <CardDescription className="text-base leading-relaxed">
-                    Collect student preferences and understand the reasoning behind their assessment choices
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button asChild variant="link" className="p-0 h-auto gap-1 text-accent font-semibold">
-                    <Link to="/opinions">
-                      Share feedback
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+              {/* Removed: Student Opinions card */}
 
-              <Card className="shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 border-t-4 border-t-primary">
+              <Card className="shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 border-t-4 border-t-primary min-h-[320px]">
                 <CardHeader className="space-y-3">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                     <ClipboardList className="h-6 w-6 text-primary" />
                   </div>
                   <CardTitle className="text-xl">Take the Test</CardTitle>
                   <CardDescription className="text-base leading-relaxed">
-                    Answer 44 computer knowledge questions in written and audio formats
+                    Answer computer knowledge questions in written and audio formats
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -117,7 +94,7 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 border-t-4 border-t-accent">
+              <Card className="shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 border-t-4 border-t-accent min-h-[320px]">
                 <CardHeader className="space-y-3">
                   <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
                     <Lightbulb className="h-6 w-6 text-accent" />

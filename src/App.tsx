@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Analyze from "./pages/Analyze";
-import Opinions from "./pages/Opinions";
+// Removed Opinions import
 import Insights from "./pages/Insights";
 import About from "./pages/About";
 import Login from "./pages/Login";
@@ -28,7 +28,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/analyze" element={<Analyze />} />
-              <Route path="/opinions" element={<Opinions />} />
+              {/* Removed Opinions route */}
               <Route path="/insights" element={<Insights />} />
               <Route path="/questionnaire" element={<Questionnaire />} />
               <Route path="/about" element={<About />} />
